@@ -8,19 +8,28 @@ export function Header() {
   const [walletAddress, setWalletAddress] = useState<string>("");
 
   useEffect(() => {
-    if (session?.user?.email) {
-      // Use email as user ID since OAuth providers use email as unique identifier
-      const userId = btoa(session.user.email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
-      fetchWalletAddress(userId);
+    if (session?.accessToken) {
+      fetchUserIdAndWallet(session.accessToken);
     }
   }, [session]);
 
-  const fetchWalletAddress = async (userId: string) => {
+  const fetchUserIdAndWallet = async (oauthToken: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/get/${userId}`);
-      const data = await response.json();
-      if (data.walletAddress) {
-        setWalletAddress(data.walletAddress);
+      // First call /create to get the user ID that the backend generates
+      const createResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oauthToken })
+      });
+      const createData = await createResponse.json();
+      
+      if (createData.uid) {
+        // Now fetch wallet address using the same user ID
+        const walletResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/get/${createData.uid}`);
+        const walletData = await walletResponse.json();
+        if (walletData.walletAddress) {
+          setWalletAddress(walletData.walletAddress);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch wallet address:", error);

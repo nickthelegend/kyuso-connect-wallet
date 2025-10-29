@@ -15,17 +15,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session>(null);
 
   const createWallet = async (oauthToken: string) => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oauthToken })
-      });
-      const result = await response.json();
-      console.log('Wallet created:', result);
-    } catch (error) {
-      console.error('Failed to create wallet:', error);
-    }
+    // Wallet creation is now handled in Header component to get the user ID
+    console.log('Wallet creation will be handled by Header component');
   };
 
   return (
