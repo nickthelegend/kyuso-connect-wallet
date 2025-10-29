@@ -1,6 +1,4 @@
 import React from "react";
-import { Dialog } from "@headlessui/react";
-import { motion } from "framer-motion";
 import { useAuth } from "./useAuth";
 
 type Props = {
@@ -29,31 +27,28 @@ export function AuthModal({ open, onClose, providers = ["google", "github"] }: P
     window.addEventListener("message", onMessage);
   }
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/40" aria-hidden />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.15 }}
-          className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center"
-        >
-          <h2 className="text-lg font-semibold mb-4">Sign in</h2>
-
-          {providers.map((p) => (
-            <button
-              key={p}
-              onClick={() => openPopup(p)}
-              className="w-full mb-3 p-2 rounded-lg border"
-            >
-              Continue with {p[0].toUpperCase() + p.slice(1)}
-            </button>
-          ))}
-
-          <button onClick={onClose} className="mt-2 text-sm text-gray-500">Cancel</button>
-        </motion.div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
+        <h2 className="text-lg font-semibold mb-4">Sign in</h2>
+        
+        {providers.map((p) => (
+          <button
+            key={p}
+            onClick={() => openPopup(p)}
+            className="w-full mb-3 p-2 rounded-lg border hover:bg-gray-50"
+          >
+            Continue with {p[0].toUpperCase() + p.slice(1)}
+          </button>
+        ))}
+        
+        <button onClick={onClose} className="mt-2 text-sm text-gray-500 hover:text-gray-700">
+          Cancel
+        </button>
       </div>
-    </Dialog>
+    </div>
   );
 }
