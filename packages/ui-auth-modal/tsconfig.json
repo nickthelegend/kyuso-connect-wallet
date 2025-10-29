@@ -5,11 +5,14 @@
     "moduleResolution": "node",
     "jsx": "react-jsx",
     "declaration": true,
+    "declarationMap": true,
     "outDir": "dist",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "strict": false
+    "strict": true,
+    "noImplicitAny": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
 }

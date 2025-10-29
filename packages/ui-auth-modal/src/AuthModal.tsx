@@ -3,13 +3,13 @@ import Modal from "react-modal";
 import { motion } from "framer-motion";
 import { useAuth } from "./useAuth";
 
-type Props = {
+export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   providers?: ("google" | "github")[];
-};
+}
 
-export function AuthModal({ isOpen, onClose, providers = ["google", "github"] }: Props) {
+export function AuthModal({ isOpen, onClose, providers = ["google", "github"] }: AuthModalProps) {
   const { setSession } = useAuth();
 
   useEffect(() => {

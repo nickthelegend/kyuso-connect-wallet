@@ -2,18 +2,24 @@ export { AuthProvider } from "./AuthProvider";
 export { AuthModal } from "./AuthModal";
 export { useAuth } from "./useAuth";
 
-// CSS for react-modal animations
-export const modalStyles = `
-.ReactModal__Overlay {
-  opacity: 0;
-  transition: opacity 200ms ease-in-out;
-}
+// Types
+export type Session = {
+  accessToken?: string | null;
+  user?: {
+    name?: string;
+    email?: string;
+    image?: string;
+    provider?: string;
+  };
+} | null;
 
-.ReactModal__Overlay--after-open {
-  opacity: 1;
-}
+export type AuthModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  providers?: ("google" | "github")[];
+};
 
-.ReactModal__Overlay--before-close {
-  opacity: 0;
-}
-`;
+export type AuthContextType = {
+  session: Session;
+  setSession: (session: Session) => void;
+};
