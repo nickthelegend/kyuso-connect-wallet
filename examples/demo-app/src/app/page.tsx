@@ -46,7 +46,7 @@ export default function Home() {
       
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: validSender,
-        receiver: validSender,
+        receiver: "LEGENDMQQJJWSQVHRFK36EP7GTM3MTI3VD3GN25YMKJ6MEBR35J4SBNVD4",
         amount: 1_000_000,
         note: new Uint8Array(Buffer.from("Vault Payment Test")),
         suggestedParams: params,
