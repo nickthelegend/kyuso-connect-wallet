@@ -1,22 +1,23 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const BACKEND_SIGN_URL = process.env.BACKEND_SIGN_URL || "http://127.0.0.1:3000/sign";
-  
   try {
-    const response = await fetch(BACKEND_SIGN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+    const { senderAddr, receiverAddr, amount, oauthToken } = req.body;
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/sign-txn`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senderAddr, receiverAddr, amount, oauthToken })
     });
     
     const result = await response.json();
-    res.status(response.status).json(result);
+    res.json(result);
   } catch (error) {
-    res.status(500).json({ error: "Failed to proxy to backend" });
+    console.error('Proxy sign error:', error);
+    res.status(500).json({ error: 'Proxy sign failed', details: error.message });
   }
 }

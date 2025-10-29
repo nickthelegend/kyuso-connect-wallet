@@ -44,43 +44,17 @@ export function Header() {
     if (!session?.accessToken || !walletAddress) return;
     
     try {
-      // Create transaction using algosdk (you'll need to install algosdk: npm install algosdk)
-      const algosdk = (await import('algosdk')).default;
-      
-      // Get network params
-      const algodClient = new algosdk.Algodv2('', 'https://testnet-api.algonode.cloud', '');
-      const params = await algodClient.getTransactionParams().do();
-      
-      // Create payment transaction
-      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        sender: walletAddress,
-        receiver: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY", // mock receiver
-        amount: 1_000_000, // 1 ALGO in microAlgos
-        note: new Uint8Array(Buffer.from("Test payment from Kyuso OAuth")),
-        suggestedParams: params,
-      });
-      
-      // Encode transaction for backend
-      const txnEncoded = Buffer.from(JSON.stringify({ txn: txn.get_obj_for_encoding() })).toString('base64');
-      
-      // Send to /sign endpoint
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/sign`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/test-txn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          txn: txnEncoded,
-          oauthToken: session.accessToken
+          oauthToken: session.accessToken,
+          senderAddr: walletAddress
         })
       });
-      
       const result = await response.json();
       console.log('Transaction result:', result);
-      
-      if (result.txId) {
-        alert(`Transaction sent! TxID: ${result.txId}`);
-      } else {
-        alert(`Error: ${result.error || 'Unknown error'}`);
-      }
+      alert(result.success ? `Transaction sent! TxID: ${result.txId}` : `Error: ${result.error}`);
     } catch (error) {
       console.error('Transaction failed:', error);
       alert('Transaction failed. Check console for details.');
@@ -104,4 +78,35 @@ export function Header() {
               {truncateAddress(walletAddress)}
             </button>
           ) : (
-            <s
+            <span className="text-sm text-gray-600">Loading wallet...</span>
+          )}
+          
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-10">
+              <div className="py-1">
+                <button
+                  onClick={() => {
+                    testTransaction();
+                    setDropdownOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Test Transaction
+                </button>
+                <button
+                  onClick={() => {
+                    logout();
+                    setDropdownOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

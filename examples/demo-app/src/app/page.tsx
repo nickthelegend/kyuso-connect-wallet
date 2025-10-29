@@ -12,17 +12,59 @@ export default function Home() {
     if (!session?.accessToken) return alert("No access token available");
     
     try {
+      // Get wallet address first
+      const createResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oauthToken: session.accessToken })
+      });
+      const createData = await createResponse.json();
+      
+      if (!createData.uid) return alert("Failed to get user ID");
+      
+      const walletResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/get/${createData.uid}`);
+      const walletData = await walletResponse.json();
+      
+      if (!walletData.walletAddress) return alert("Failed to get wallet address");
+      
+      // Create transaction using algosdk
+      const algosdk = (await import('algosdk')).default;
+      const algodClient = new algosdk.Algodv2('', 'https://testnet-api.algonode.cloud', '');
+      
+      // 1️⃣ Get transaction params from network
+      const params = await algodClient.getTransactionParams().do();
+
+      // 2️⃣ Create a simple Payment transaction (1 Algo)
+      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        sender: walletData.walletAddress,
+        receiver: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY", // mock receiver
+        amount: 1_000_000, // microAlgos (1 Algo)
+        note: new Uint8Array(Buffer.from("Vault Payment Test")),
+        suggestedParams: params,
+      });
+
+      // 3️⃣ Get bytes to sign (canonical)
+      const bytesToSign = txn.bytesToSign();
+      
+      // 4️⃣ Send to proxy-sign which forwards to backend /sign-txn
       const response = await fetch("/api/proxy-sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          txn: "<base64-unsigned-txn>",
+          senderAddr: walletData.walletAddress,
+          receiverAddr: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY",
+          amount: 1_000_000,
           oauthToken: session.accessToken
         })
       });
       const result = await response.json();
       console.log("Backend result:", result);
-      alert("Success! Check console for details");
+      
+      if (result.success && result.txId) {
+        alert(`Transaction sent! TxID: ${result.txId}`);
+      } else {
+        alert(`Error: ${result.error || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Error occurred. Check console for details");
