@@ -69,14 +69,38 @@ npm run dev
 
 ## Key Files
 
-- `packages/ui-auth-modal/src/AuthModal.tsx` - Modal component
-- `examples/next-app/pages/auth/popup-callback.tsx` - OAuth callback
-- `examples/next-app/pages/api/proxy-sign.ts` - Backend proxy
+- `packages/ui-auth-modal/src/AuthModal.tsx` - Beautiful modal with react-modal
+- `examples/demo-app/src/pages/auth/popup-callback.tsx` - OAuth callback
+- `examples/demo-app/src/pages/api/proxy-sign.ts` - Backend proxy
 - `backend/server.js` - Vault signing service
+
+## Features
+
+- ✅ **Perfect Modal Centering** - Uses react-modal for flawless positioning
+- ✅ **Smooth Animations** - Framer Motion transitions
+- ✅ **Beautiful Design** - Modern gradients and professional styling
+- ✅ **Provider Icons** - Google and GitHub branded buttons
+- ✅ **TypeScript Support** - Full type safety
+- ✅ **Responsive Design** - Works on all screen sizes
+
+## Usage
+
+```tsx
+import { AuthModal, AuthProvider, useAuth } from "ui-auth-modal";
+
+// Wrap your app
+<AuthProvider>
+  <YourApp />
+</AuthProvider>
+
+// Use the modal
+const { session } = useAuth();
+<AuthModal isOpen={open} onClose={() => setOpen(false)} />
+```
 
 ## Customization
 
 - Add more OAuth providers in NextAuth config
-- Style the modal with Tailwind classes
+- Customize modal styling with Tailwind classes
 - Extend AuthProvider with additional session data
 - Add token validation in backend

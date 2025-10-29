@@ -8,14 +8,15 @@
     "build": "tsc && echo built"
   },
   "peerDependencies": {
+    "framer-motion": "^10.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "@headlessui/react": "^1.7.0",
-    "framer-motion": "^10.0.0"
+    "react-modal": "^3.16.1"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
     "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0"
+    "@types/react-dom": "^18.0.0",
+    "@types/react-modal": "^3.16.3",
+    "typescript": "^5.0.0"
   }
 }
