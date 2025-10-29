@@ -9,7 +9,9 @@
   },
   "peerDependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "@headlessui/react": "^1.7.0",
+    "framer-motion": "^10.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
