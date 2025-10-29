@@ -429,7 +429,7 @@ app.post("/sign-txn", async (req, res) => {
     const { senderAddr, receiverAddr, amount, oauthToken } = req.body;
     
     // Verify user
-    const user = verifyOAuthToken(oauthToken);
+    const user = await verifyOAuthToken(oauthToken);
     if (!user) return res.status(401).json({ error: "Invalid oauth token" });
 
     const userId = user.uid;
@@ -441,12 +441,12 @@ app.post("/sign-txn", async (req, res) => {
     const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
       sender: senderAddr,
       receiver: receiverAddr || "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY",
-      amount: amount || 1_000_000, // microAlgos (1 Algo default)
+      amount: amount || 1_000_000,
       note: new Uint8Array(Buffer.from("Vault Payment Test")),
       suggestedParams: params,
     });
 
-    // 3️⃣ Get bytes to sign (canonical)
+    // 3️⃣ Get bytes to sign
     const bytesToSign = txn.bytesToSign();
 
     // 4️⃣ Ask Vault to sign

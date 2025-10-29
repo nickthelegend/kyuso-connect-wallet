@@ -27,8 +27,18 @@ export default function Home() {
       
       if (!walletData.walletAddress) return alert("Failed to get wallet address");
       
-      // Create transaction using algosdk
+      console.log("Wallet address:", walletData.walletAddress);
+      console.log("Wallet address type:", typeof walletData.walletAddress);
+      console.log("Wallet address length:", walletData.walletAddress?.length);
+      
+      // Validate wallet address format
       const algosdk = (await import('algosdk')).default;
+      
+      if (!algosdk.isValidAddress(walletData.walletAddress)) {
+        console.error("Invalid wallet address:", walletData.walletAddress);
+        return alert("Invalid wallet address format");
+      }
+      
       const algodClient = new algosdk.Algodv2('', 'https://testnet-api.algonode.cloud', '');
       
       // 1️⃣ Get transaction params from network
@@ -37,23 +47,22 @@ export default function Home() {
       // 2️⃣ Create a simple Payment transaction (1 Algo)
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: walletData.walletAddress,
-        receiver: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY", // mock receiver
-        amount: 1_000_000, // microAlgos (1 Algo)
+        receiver: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY",
+        amount: 1_000_000,
         note: new Uint8Array(Buffer.from("Vault Payment Test")),
         suggestedParams: params,
       });
 
-      // 3️⃣ Get bytes to sign (canonical)
-      const bytesToSign = txn.bytesToSign();
+      // 3️⃣ Encode transaction bytes
+      const txnBytes = algosdk.encodeUnsignedTransaction(txn);
       
-      // 4️⃣ Send to proxy-sign which forwards to backend /sign-txn
-      const response = await fetch("/api/proxy-sign", {
+      // 4️⃣ Send transaction bytes to backend
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/sign-txn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          txnBytes: Buffer.from(txnBytes).toString('base64'),
           senderAddr: walletData.walletAddress,
-          receiverAddr: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY",
-          amount: 1_000_000,
           oauthToken: session.accessToken
         })
       });
