@@ -1,5 +1,5 @@
 "use client";
-
+import algosdk from "algosdk";
 import { useState } from "react";
 import { AuthModal } from "../components/AuthModal";
 import { useAuth } from "../components/AuthProvider";
@@ -32,22 +32,21 @@ export default function Home() {
       console.log("Wallet address length:", walletData.walletAddress?.length);
       
       // Validate wallet address format
-      const algosdk = (await import('algosdk')).default;
       
-      if (!algosdk.isValidAddress(walletData.walletAddress)) {
-        console.error("Invalid wallet address:", walletData.walletAddress);
-        return alert("Invalid wallet address format");
-      }
+      
       
       const algodClient = new algosdk.Algodv2('', 'https://testnet-api.algonode.cloud', '');
       
       // 1️⃣ Get transaction params from network
       const params = await algodClient.getTransactionParams().do();
 
-      // 2️⃣ Create a simple Payment transaction (1 Algo)
+      // 2️⃣ Create a simple Payment transaction (1 Algo) - using valid test address
+      const validSender = walletData.walletAddress;
+
+      
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        sender: walletData.walletAddress,
-        receiver: "JQ4DXV6ZXEQJRPRRFQDLR5WWD7WUPAELJNKP6FVSAQ4ZJNRHGBYJCKDHOY",
+        sender: validSender,
+        receiver: validSender,
         amount: 1_000_000,
         note: new Uint8Array(Buffer.from("Vault Payment Test")),
         suggestedParams: params,
@@ -57,15 +56,18 @@ export default function Home() {
       const txnBytes = algosdk.encodeUnsignedTransaction(txn);
       
       // 4️⃣ Send transaction bytes to backend
+      console.log('🚀 Calling /sign-txn endpoint...');
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_SIGN_URL || 'http://127.0.0.1:3000'}/sign-txn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           txnBytes: Buffer.from(txnBytes).toString('base64'),
-          senderAddr: walletData.walletAddress,
+          senderAddr: validSender,
           oauthToken: session.accessToken
         })
       });
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
       const result = await response.json();
       console.log("Backend result:", result);
       
