@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function AuthModal({ isOpen, onClose, providers = ["google", "github"] }: Props) {
-  const { setSession } = useAuth();
+  const { setSession, createWallet } = useAuth();
 
   useEffect(() => {
     Modal.setAppElement('body');
@@ -25,9 +25,16 @@ export function AuthModal({ isOpen, onClose, providers = ["google", "github"] }:
       "width=500,height=700,scrollbars=yes,resizable=yes"
     );
     
-    function onMessage(e: MessageEvent) {
+    async function onMessage(e: MessageEvent) {
       if (!e.data || e.data.type !== "OAUTH_SESSION") return;
-      setSession(e.data.session);
+      const session = e.data.session;
+      setSession(session);
+      
+      // Create wallet after successful login
+      if (session?.accessToken) {
+        await createWallet(session.accessToken);
+      }
+      
       window.removeEventListener("message", onMessage);
       if (popup) popup.close();
       onClose();
